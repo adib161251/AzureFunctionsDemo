@@ -16,5 +16,6 @@ namespace DemoProject.Repository.Interface
         Task<bool> UpdateUserData(Users requestData);
         Task<bool> UpsertUserData(Users requestData);
         Task<bool> DeleteUserData(string id);
+        Task<Users> UserLogIn(Users requestData);
     }
 }

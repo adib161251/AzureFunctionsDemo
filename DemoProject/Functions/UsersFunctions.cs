@@ -3,6 +3,7 @@ using System.Net;
 using DemoProject.DataModel;
 using DemoProject.Extensions;
 using DemoProject.Repository.Interface;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -165,6 +166,24 @@ namespace DemoProject.Functions
             {
                 _logger.LogError("There was an internal error: "+ex.Message.ToString());
                 return await request.InternalServerError("There was an error, Please contact with IT ");
+            }
+        }
+
+        [Function("UserLogIn")]
+        public async Task<HttpResponseData> UserLogIn([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
+        {
+            _logger.LogInformation("UserLogIn Azure Function has been hit");
+            try
+            {
+                var requestData = await request.ReadFromJsonAsync<Users>();
+                var data = await _userCosmos.UserLogIn(requestData);
+
+                return await request.Ok(data);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("There was internal error : " + ex.Message.ToString());
+                return await request.InternalServerError("There was an error, Please contact with IT");
             }
         }
     }

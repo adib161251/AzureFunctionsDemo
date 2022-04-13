@@ -111,5 +111,11 @@ namespace DemoProject.RepositoryLayer
             }
             return false;
         }
+
+        public async Task<Users> UserLogIn(Users requestData)
+        {
+
+            throw new NotImplementedException();
+        }
     }
 }
