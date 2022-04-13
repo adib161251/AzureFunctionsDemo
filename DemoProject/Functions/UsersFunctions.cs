@@ -78,7 +78,6 @@ namespace DemoProject.Functions
             }
         }
 
-
         [Function("GetAllUserData")]
         public async Task<HttpResponseData> GetAllUserData([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData request)
         {

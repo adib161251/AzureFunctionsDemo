@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DemoProject.BodyModel;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -10,6 +11,6 @@ namespace DemoProject.Service.Interface
 {
     public interface ISecurityService
     {
-        Task<string> GenerateJWTToken(List<Claim> authClaims);
+        Task<string> GenerateJWTToken(UsersViewModel userData);
     }
 }

@@ -139,12 +139,7 @@ namespace DemoProject.RepositoryLayer
 
             if (userData.Count > 0)
             {
-                var authClaims = new List<Claim>()
-                {
-                    new Claim(ClaimTypes.Name, userData.FirstOrDefault().Id.ToString()),
-                    new Claim(ClaimTypes.Role, (userData.FirstOrDefault().AdminType == 1?"Admin":"User"))
-                };
-                var token = await _securityService.GenerateJWTToken(authClaims);
+                var token = await _securityService.GenerateJWTToken(userData.FirstOrDefault());
 
                 var response = userData.Select(x => new UsersViewModel
                 {

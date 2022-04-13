@@ -1,4 +1,5 @@
-﻿using DemoProject.Service.Interface;
+﻿using DemoProject.BodyModel;
+using DemoProject.Service.Interface;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,16 @@ namespace DemoProject.Service
 {
     public class SecurityService : ISecurityService
     {
-        public async Task<string> GenerateJWTToken(List<Claim> authClaims)
+        public async Task<string> GenerateJWTToken(UsersViewModel userData)
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("JWTAuthenticationHIGHsecuredPasswordVVVp1OH7Xzyr"));
+
+            var authClaims = new List<Claim>()
+                {
+                    new Claim(ClaimTypes.Name, userData.Id.ToString()),
+                    new Claim(ClaimTypes.Role, (userData.AdminType == 1?"Admin":"User"))
+                };
+
 
             var tokenHandler = new JwtSecurityToken(
                 issuer: "http://localhost:7071",
