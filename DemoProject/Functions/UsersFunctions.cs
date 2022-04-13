@@ -177,8 +177,12 @@ namespace DemoProject.Functions
             {
                 var requestData = await request.ReadFromJsonAsync<Users>();
                 var data = await _userCosmos.UserLogIn(requestData);
+                if (data != null)
+                {
+                    return await request.Ok(data);
+                }
 
-                return await request.Ok(data);
+                return await request.UnAuthorized("You do not have any credentials");
             }
             catch(Exception ex)
             {

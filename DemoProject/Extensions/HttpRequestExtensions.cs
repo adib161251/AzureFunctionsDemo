@@ -74,6 +74,24 @@ namespace DemoProject.Extensions
             };
             await response.WriteAsJsonAsync(responseBode);
             return response;
-        } 
+        }
+
+        public static async Task<HttpResponseData> UnAuthorized(this HttpRequestData requestData, string errorMessage)
+        {
+            var response = requestData.CreateResponse(HttpStatusCode.Unauthorized);
+
+            var messageBody = new
+            {
+                Type = BadRequestErrorTypeUrl,
+                Status = HttpStatusCode.Unauthorized,
+                Title = Title,
+                Detail = errorMessage,
+                Instance = requestData.Url.AbsoluteUri
+            };
+
+            await response.WriteAsJsonAsync(messageBody, HttpStatusCode.Unauthorized);
+
+            return response;
+        }
     }
 }

@@ -1,10 +1,14 @@
-﻿using DemoProject.DataModel;
+﻿using DemoProject.BodyModel;
+using DemoProject.DataModel;
 using DemoProject.Repository.Interface;
+using DemoProject.Service.Interface;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,12 +24,13 @@ namespace DemoProject.RepositoryLayer
         private string dbName = "FamilyTree";
         private string containerName = "UserInfo";
         private string partitionPath = "/id";
+        private readonly ISecurityService _securityService;
 
-
-        public UserCosmos()
+        public UserCosmos(ISecurityService securityService)
         {
             this.cosmosClient = new CosmosClient(URI,primaryKey);
             this.container = this.cosmosClient.GetContainer(dbName, containerName);
+            _securityService = securityService;
         }
 
         public async Task<object> CreateContainer()
@@ -112,10 +117,52 @@ namespace DemoProject.RepositoryLayer
             return false;
         }
 
-        public async Task<Users> UserLogIn(Users requestData)
+        public async Task<UsersViewModel> UserLogIn(Users requestData)
         {
+            var data = Environment.GetEnvironmentVariable("JWT", EnvironmentVariableTarget.Process);
 
-            throw new NotImplementedException();
+            var query = container.GetItemLinqQueryable<Users>();
+            var iterator = query.Where(x => x.UserName.Equals(requestData.UserName) && x.Password.Equals(requestData.Password)).ToFeedIterator();
+
+            var userData = (await iterator.ReadNextAsync()).Select(x=> new UsersViewModel
+            {
+                UserName = x.UserName,
+                Token = null,
+                Id = x.Id,
+                FullName = x.FullName,
+                AdminType = x.AdminType,
+                CreatedOn = x.CreatedOn,
+                EmployeeId = x.EmployeeId,
+                UpdatedOn = x.UpdatedOn,
+            }).ToList();
+
+
+            if (userData.Count > 0)
+            {
+                var authClaims = new List<Claim>()
+                {
+                    new Claim(ClaimTypes.Name, userData.FirstOrDefault().Id.ToString()),
+                    new Claim(ClaimTypes.Role, (userData.FirstOrDefault().AdminType == 1?"Admin":"User"))
+                };
+                var token = await _securityService.GenerateJWTToken(authClaims);
+
+                var response = userData.Select(x => new UsersViewModel
+                {
+                    UserName = x.UserName,
+                    Token = token,
+                    Id = x.Id,
+                    FullName = x.FullName,
+                    AdminType = x.AdminType,
+                    CreatedOn = x.CreatedOn,
+                    EmployeeId = x.EmployeeId,
+                    UpdatedOn = x.UpdatedOn,
+                }).FirstOrDefault();
+
+                return response;
+            }
+
+            return null;
+
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using DemoProject.DataModel;
+﻿using DemoProject.BodyModel;
+using DemoProject.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,6 @@ namespace DemoProject.Repository.Interface
         Task<bool> UpdateUserData(Users requestData);
         Task<bool> UpsertUserData(Users requestData);
         Task<bool> DeleteUserData(string id);
-        Task<Users> UserLogIn(Users requestData);
+        Task<UsersViewModel> UserLogIn(Users requestData);
     }
 }
