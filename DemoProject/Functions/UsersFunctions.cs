@@ -3,6 +3,7 @@ using System.Net;
 using DemoProject.DataModel;
 using DemoProject.Extensions;
 using DemoProject.Repository.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -79,6 +80,7 @@ namespace DemoProject.Functions
         }
 
         [Function("GetAllUserData")]
+        [Authorize]
         public async Task<HttpResponseData> GetAllUserData([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData request)
         {
             _logger.LogInformation("AddNewUsersInfo Azure Function has been hit");

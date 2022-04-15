@@ -37,12 +37,13 @@ var host = new HostBuilder()
             };
         });
 
+
         builder.Services.AddHttpClient();
         builder.Services.AddTransient<IFamilyCosmos, FamilyCosmos>();
         builder.Services.AddTransient<IUserCosmos, UserCosmos>();
         builder.Services.AddTransient<ISecurityService, SecurityService>();
         //builder.Services.AddTransient<IConfiguration, Configuration>();
-        //builder.Services.AddAuthorization();
+        builder.Services.AddAuthorization();
     })
     .ConfigureAppConfiguration(app =>
         app.SetBasePath(Directory.GetCurrentDirectory())
