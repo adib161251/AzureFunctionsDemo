@@ -2,6 +2,8 @@
 using DemoProject.DataModel;
 using DemoProject.Repository.Interface;
 using DemoProject.Service.Interface;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using System;
@@ -43,11 +45,20 @@ namespace DemoProject.RepositoryLayer
 
         public async Task<Users> AddNewUsersInfo(Users usersData)
         {
-            usersData.Id = Guid.NewGuid();
-            usersData.CreatedOn = DateTime.Now.ToString();
 
-            var data = await container.CreateItemAsync<Users>(usersData);
-            return data;
+            var query = container.GetItemLinqQueryable<Users>();
+            var isExists = await query.Where(x=> x.UserName == usersData.UserName).CountAsync();
+
+            if(isExists <= 0)
+            {
+                usersData.Id = Guid.NewGuid();
+                usersData.CreatedOn = DateTime.Now.ToString();
+
+                var data = await container.CreateItemAsync<Users>(usersData);
+                return data;
+            }
+              
+            return null;
         }
 
         public async Task<List<Users>> GetAllUserData()
@@ -100,6 +111,9 @@ namespace DemoProject.RepositoryLayer
 
         public async Task<bool> UpsertUserData(Users requestData)
         {
+
+            requestData.Password = await _securityService.HashPassword(requestData);
+
             await container.UpsertItemAsync<Users>(requestData, new PartitionKey(requestData.Id.ToString()));
             return true;
         }
@@ -119,26 +133,28 @@ namespace DemoProject.RepositoryLayer
 
         public async Task<UsersViewModel> UserLogIn(Users requestData)
         {
-            var data = Environment.GetEnvironmentVariable("JWT", EnvironmentVariableTarget.Process);
+            //var data = Environment.GetEnvironmentVariable("JWT", EnvironmentVariableTarget.Process);
 
             var query = container.GetItemLinqQueryable<Users>();
-            var iterator = query.Where(x => x.UserName.Equals(requestData.UserName) && x.Password.Equals(requestData.Password)).ToFeedIterator();
+            var iterator = query.Where(x => x.UserName.Equals(requestData.UserName) && x.EmployeeId.Equals(requestData.EmployeeId)).ToFeedIterator();
+            var rawUserData = (await iterator.ReadNextAsync()).ToList();
 
-            var userData = (await iterator.ReadNextAsync()).Select(x=> new UsersViewModel
+            var hasAccess = await _securityService.VerifyHashPassword(requestData, rawUserData);
+
+            if (hasAccess == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Success)
             {
-                UserName = x.UserName,
-                Token = null,
-                Id = x.Id,
-                FullName = x.FullName,
-                AdminType = x.AdminType,
-                CreatedOn = x.CreatedOn,
-                EmployeeId = x.EmployeeId,
-                UpdatedOn = x.UpdatedOn,
-            }).ToList();
+                var userData = rawUserData.Select(x => new UsersViewModel
+                {
+                    UserName = x.UserName,
+                    Token = x.Password,
+                    Id = x.Id,
+                    FullName = x.FullName,
+                    AdminType = x.AdminType,
+                    CreatedOn = x.CreatedOn,
+                    EmployeeId = x.EmployeeId,
+                    UpdatedOn = x.UpdatedOn,
+                }).ToList();
 
-
-            if (userData.Count > 0)
-            {
                 var token = await _securityService.GenerateJWTToken(userData.FirstOrDefault());
 
                 var response = userData.Select(x => new UsersViewModel

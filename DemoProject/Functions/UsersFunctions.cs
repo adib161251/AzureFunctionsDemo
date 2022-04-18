@@ -3,11 +3,13 @@ using System.Net;
 using DemoProject.DataModel;
 using DemoProject.Extensions;
 using DemoProject.Repository.Interface;
+using DemoProject.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace DemoProject.Functions
 {
@@ -15,11 +17,13 @@ namespace DemoProject.Functions
     {
         private readonly ILogger _logger;
         private readonly IUserCosmos _userCosmos;
+        private readonly ISecurityService _securityService;
 
-        public UsersFunctions(ILoggerFactory loggerFactory, IUserCosmos userCosmos)
+        public UsersFunctions(ILoggerFactory loggerFactory, IUserCosmos userCosmos, ISecurityService securityService)
         {
             _logger = loggerFactory.CreateLogger<UsersFunctions>();
             _userCosmos = userCosmos;
+            _securityService = securityService;
         }
 
         [Function("UsersFunctions")]
@@ -70,6 +74,11 @@ namespace DemoProject.Functions
                 var userData = await request.ReadFromJsonAsync<Users>();
                 var data = await _userCosmos.AddNewUsersInfo(userData);
 
+                if(data == null)
+                {
+                    return await request.BadRequest("Already same user name exists");
+                }
+
                 return await request.Ok(data);
             }
             catch (Exception ex)
@@ -86,8 +95,20 @@ namespace DemoProject.Functions
             _logger.LogInformation("AddNewUsersInfo Azure Function has been hit");
             try
             {
-                var data = await _userCosmos.GetAllUserData();
-                return await request.Ok(data);
+                //var isAuthorized = await _securityService.VerifyJWTTokenV2(request);
+                //if (isAuthorized)
+                //{
+                    var data = await _userCosmos.GetAllUserData();
+                    
+                    var headersInfo = request.Headers.ToString().Split("Authorization:")[1].Trim();
+                    return await request.Ok(data);
+                //}
+                //else
+                //{
+                //    _logger.LogTrace("UnAuthorized");
+                //    return await request.UnAuthorized("Unauthoried User Trying to Access");
+                //}
+               
             }
             catch (Exception ex)
             {

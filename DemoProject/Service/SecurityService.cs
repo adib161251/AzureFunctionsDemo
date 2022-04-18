@@ -1,5 +1,10 @@
 ﻿using DemoProject.BodyModel;
+using DemoProject.DataModel;
 using DemoProject.Service.Interface;
+using JWT.Algorithms;
+using JWT.Builder;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -13,9 +18,10 @@ namespace DemoProject.Service
 {
     public class SecurityService : ISecurityService
     {
+        private static readonly string privateKey = "JWTAuthenticationHIGHsecuredPasswordVVVp1OH7Xzyr";
         public async Task<string> GenerateJWTToken(UsersViewModel userData)
         {
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("JWTAuthenticationHIGHsecuredPasswordVVVp1OH7Xzyr"));
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(privateKey));
 
             var authClaims = new List<Claim>()
                 {
@@ -35,6 +41,118 @@ namespace DemoProject.Service
             var token = new JwtSecurityTokenHandler().WriteToken(tokenHandler);
             return await Task.FromResult(token);
         }
+
+
+        public async Task<bool> VerifyJWTTokenV2(HttpRequestData request)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(privateKey);
+
+                if (!request.Headers.Contains("Authorization"))
+                {
+                    return false;
+                }
+                var authorizationHeader = request.Headers.ToString().Split("Authorization:")[1].Trim();
+
+                if (string.IsNullOrEmpty(authorizationHeader))
+                {
+                    return false;
+                }
+
+                if (authorizationHeader.StartsWith("Bearer"))
+                {
+                    authorizationHeader = authorizationHeader.Substring(7);
+                }
+
+                var token = new JwtSecurityToken(authorizationHeader);
+
+
+                tokenHandler.ValidateToken(authorizationHeader, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+                var accountId = jwtToken.Claims.First(x => x.Type == "id").Value;
+
+                // attach account to context on successful jwt validation
+                
+
+                return await Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        //this algo is not working
+        public async Task<bool> VerifyJWTToken(HttpRequestData request)
+        {
+            if (!request.Headers.Contains("Authorization"))
+            {
+                return false;
+            }
+            var authorizationHeader = request.Headers.ToString().Split("Authorization:")[1].Trim();
+
+            if (string.IsNullOrEmpty(authorizationHeader))
+            {
+                return false;
+            }
+
+            IDictionary<string, object>? claims = null;
+            try
+            {
+                if(authorizationHeader.StartsWith("Bearer"))
+                {
+                    authorizationHeader = authorizationHeader.Substring(7);
+                }
+                
+                //claims = new JwtBuilder().WithAlgorithm(new HMACSHA256Algorithm()).WithSecret(privateKey).MustVerifySignature().Decode<IDictionary<string, object>>(authorizationHeader);
+                claims = new JwtBuilder().WithAlgorithm(new HMACSHA256Algorithm()).WithSecret(privateKey).MustVerifySignature().Decode<IDictionary<string, object>>(authorizationHeader);
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+
+            if (!claims.ContainsKey("username"))
+            {
+                return false;
+            }
+            
+            var Username = Convert.ToString(claims["username"]);
+            var Role = Convert.ToString(claims["role"]);
+
+            return await Task.FromResult(true);
+        }
+
+        public async Task<string> HashPassword(Users requestData)
+        {
+            var options = new PasswordHasherOptions();
+            options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2;
+
+            var _hasher = new PasswordHasher<Users>();
+
+            return await Task.FromResult(_hasher.HashPassword(requestData, requestData.Password));
+        }
+
+        public async Task<PasswordVerificationResult> VerifyHashPassword(Users requestData, List<Users> rawUserData)
+        {
+            var options = new PasswordHasherOptions();
+            options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2;
+
+            var _hasher = new PasswordHasher<Users>();
+
+            return await Task.FromResult(_hasher.VerifyHashedPassword(requestData, rawUserData[0].Password, requestData.Password));
+        }
+
 
 
         //public CourierUsersViewModel GetToken(CourierUsersViewModel user)
