@@ -73,13 +73,15 @@ namespace DemoProject.RepositoryLayer
             var iterator = query.ToFeedIterator();
             var list = new List<Users>();
             
-            while(iterator.HasMoreResults)
-            {
-                var model = await iterator.ReadNextAsync();
-                list.AddRange(model.ToList());
-            }
+            var allData = (await iterator.ReadNextAsync()).ToList();
 
-            return list;
+            //while (iterator.HasMoreResults)
+            //{
+            //    var model = await iterator.ReadNextAsync();
+            //    list.AddRange(model.ToList());
+            //}
+
+            return allData;
         }
 
         public async Task<Users> GetUserDataIdwise(string id)
