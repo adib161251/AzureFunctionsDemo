@@ -27,12 +27,14 @@ namespace DemoProject.RepositoryLayer
         private string containerName = "UserInfo";
         private string partitionPath = "/id";
         private readonly ISecurityService _securityService;
+        private readonly Microsoft.AspNetCore.Identity.UserManager<Users> _userManager;
 
         public UserCosmos(ISecurityService securityService)
         {
             this.cosmosClient = new CosmosClient(URI,primaryKey);
             this.container = this.cosmosClient.GetContainer(dbName, containerName);
             _securityService = securityService;
+            //_userManager = userManager; 
         }
 
         public async Task<object> CreateContainer()
@@ -45,19 +47,22 @@ namespace DemoProject.RepositoryLayer
 
         public async Task<Users> AddNewUsersInfo(Users usersData)
         {
+            //var data = await _userManager.CreateAsync(usersData);
+
 
             var query = container.GetItemLinqQueryable<Users>();
-            var isExists = await query.Where(x=> x.UserName == usersData.UserName).CountAsync();
+            var isExists = await query.Where(x => x.UserName == usersData.UserName).CountAsync();
 
-            if(isExists <= 0)
+            if (isExists <= 0)
             {
                 usersData.Id = Guid.NewGuid();
                 usersData.CreatedOn = DateTime.Now.ToString();
+                usersData.Password = await _securityService.HashPassword(usersData);
 
                 var data = await container.CreateItemAsync<Users>(usersData);
                 return data;
             }
-              
+
             return null;
         }
 
@@ -155,7 +160,8 @@ namespace DemoProject.RepositoryLayer
                     UpdatedOn = x.UpdatedOn,
                 }).ToList();
 
-                var token = await _securityService.GenerateJWTToken(userData.FirstOrDefault());
+                //var token = await _securityService.GenerateJWTToken(userData.FirstOrDefault());
+                var token = await _securityService.GenerateJWTTokenAsyncV2(userData.FirstOrDefault());
 
                 var response = userData.Select(x => new UsersViewModel
                 {

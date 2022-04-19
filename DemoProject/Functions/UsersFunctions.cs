@@ -4,6 +4,7 @@ using DemoProject.DataModel;
 using DemoProject.Extensions;
 using DemoProject.Repository.Interface;
 using DemoProject.Service.Interface;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Azure.Functions.Worker;
@@ -13,6 +14,7 @@ using Newtonsoft.Json;
 
 namespace DemoProject.Functions
 {
+
     public class UsersFunctions
     {
         private readonly ILogger _logger;
@@ -84,12 +86,12 @@ namespace DemoProject.Functions
             catch (Exception ex)
             {
                 _logger.LogError("There was an internal error: " + ex.Message.ToString());
-                return await request.InternalServerError("There was an error, Please contact with IT Support");
+                return await request.InternalServerError(ex.Message.ToString());
             }
         }
 
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [Function("GetAllUserData")]
-        [Authorize]
         public async Task<HttpResponseData> GetAllUserData([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData request)
         {
             _logger.LogInformation("AddNewUsersInfo Azure Function has been hit");
@@ -113,7 +115,7 @@ namespace DemoProject.Functions
             catch (Exception ex)
             {
                 _logger.LogError("There was an internal error: " + ex.Message.ToString());
-                return await request.InternalServerError("There was an error, Please contact with IT Support");
+                return await request.InternalServerError(ex.Message.ToString());
             }
         }
 
@@ -133,7 +135,7 @@ namespace DemoProject.Functions
             catch (Exception ex)
             {
                 _logger.LogError("There was an internal error: " + ex.Message.ToString());
-                return await request.InternalServerError("There was an error, Please contact with IT Support");
+                return await request.InternalServerError(ex.Message.ToString());
             }
         }
 
@@ -151,7 +153,7 @@ namespace DemoProject.Functions
             catch (Exception ex)
             {
                 _logger.LogError("There was an internal error: " + ex.Message.ToString());
-                return await request.InternalServerError("There was an error, Please contact with IT Support");
+                return await request.InternalServerError(ex.Message.ToString());
             }
         }
 
@@ -169,7 +171,7 @@ namespace DemoProject.Functions
             catch (Exception ex)
             {
                 _logger.LogError("There was an internal error: " + ex.Message.ToString());
-                return await request.InternalServerError("There was an error, Please contact with IT Support");
+                return await request.InternalServerError(ex.Message.ToString());
             }
         }
 
@@ -187,7 +189,7 @@ namespace DemoProject.Functions
             catch (Exception ex)
             {
                 _logger.LogError("There was an internal error: "+ex.Message.ToString());
-                return await request.InternalServerError("There was an error, Please contact with IT ");
+                return await request.InternalServerError(ex.Message.ToString());
             }
         }
 
@@ -204,12 +206,12 @@ namespace DemoProject.Functions
                     return await request.Ok(data);
                 }
 
-                return await request.UnAuthorized("You do not have any credentials");
+                return await request.UnAuthorized("You are unauthorized");
             }
             catch(Exception ex)
             {
                 _logger.LogError("There was internal error : " + ex.Message.ToString());
-                return await request.InternalServerError("There was an error, Please contact with IT");
+                return await request.InternalServerError(ex.Message.ToString());
             }
         }
     }

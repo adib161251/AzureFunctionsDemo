@@ -42,6 +42,29 @@ namespace DemoProject.Service
             return await Task.FromResult(token);
         }
 
+        public async Task<string> GenerateJWTTokenAsyncV2(UsersViewModel userData)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(privateKey);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, userData.Id.ToString()),
+                    new Claim(ClaimTypes.Role, (userData.AdminType == 1?"Admin":"User"))
+                }),
+                Expires = DateTime.UtcNow.AddDays(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            var writtenToken = tokenHandler.WriteToken(token);
+            return writtenToken;
+        }
+
 
         public async Task<bool> VerifyJWTTokenV2(HttpRequestData request)
         {

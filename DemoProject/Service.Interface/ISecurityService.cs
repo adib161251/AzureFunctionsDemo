@@ -15,6 +15,7 @@ namespace DemoProject.Service.Interface
     public interface ISecurityService
     {
         Task<string> GenerateJWTToken(UsersViewModel userData);
+        Task<string> GenerateJWTTokenAsyncV2(UsersViewModel userData);
         Task<bool> VerifyJWTToken(HttpRequestData userData);
         Task<bool> VerifyJWTTokenV2(HttpRequestData userData);
         Task<string> HashPassword(Users requestData);
