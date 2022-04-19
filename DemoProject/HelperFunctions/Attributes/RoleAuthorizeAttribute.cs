@@ -8,12 +8,9 @@ using System.Threading.Tasks;
 
 namespace DemoProject.HelperFunctions.Attributes
 {
-    public class RoleAuthorizeAttribute : Attribute, IAuthorizationFilter
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+    public class RoleAuthorizeAttribute : Attribute
     {
-        public  void OnAuthorization(AuthorizationFilterContext context)
-        {
-            throw new NotImplementedException();
-        }
-
+        public string something { get; set; } = "Hello";
     }
 }

@@ -53,7 +53,7 @@ var host = new HostBuilder()
             };
         });
 
-        builder.Services.AddAuthorization();
+        //builder.Services.AddAuthorization();
 
         builder.Services.AddMvc(options =>
         {

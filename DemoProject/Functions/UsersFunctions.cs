@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Net;
 using DemoProject.DataModel;
 using DemoProject.Extensions;
+using DemoProject.HelperFunctions.Attributes;
 using DemoProject.Repository.Interface;
 using DemoProject.Service.Interface;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -76,7 +76,7 @@ namespace DemoProject.Functions
                 var userData = await request.ReadFromJsonAsync<Users>();
                 var data = await _userCosmos.AddNewUsersInfo(userData);
 
-                if(data == null)
+                if (data == null)
                 {
                     return await request.BadRequest("Already same user name exists");
                 }
@@ -90,7 +90,8 @@ namespace DemoProject.Functions
             }
         }
 
-        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(new[] {"Admin"})]
+        //[RoleAuthorize]
         [Function("GetAllUserData")]
         public async Task<HttpResponseData> GetAllUserData([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData request)
         {
@@ -102,7 +103,7 @@ namespace DemoProject.Functions
                 //{
                     var data = await _userCosmos.GetAllUserData();
                     
-                    var headersInfo = request.Headers.ToString().Split("Authorization:")[1].Trim();
+                    //var headersInfo = request.Headers.ToString().Split("Authorization:")[1].Trim();
                     return await request.Ok(data);
                 //}
                 //else
