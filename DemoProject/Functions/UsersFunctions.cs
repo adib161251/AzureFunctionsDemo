@@ -90,7 +90,7 @@ namespace DemoProject.Functions
             }
         }
 
-        [Authorize(new[] {"Admin"})]
+        [Authorize]
         //[RoleAuthorize]
         [Function("GetAllUserData")]
         public async Task<HttpResponseData> GetAllUserData([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData request)
@@ -120,7 +120,7 @@ namespace DemoProject.Functions
             }
         }
 
-
+        [Authorize]
         [Function("GetUserDataIdwise")]
         public async Task<HttpResponseData> GetUserDataIdwise([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {

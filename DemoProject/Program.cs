@@ -1,4 +1,5 @@
 using DemoProject.DataModel;
+using DemoProject.HelperFunctions.CustomMiddleware;
 using DemoProject.Repository.Interface;
 using DemoProject.RepositoryLayer;
 using DemoProject.Service;
@@ -63,16 +64,17 @@ var host = new HostBuilder()
 
             options.Filters.Add(new AuthorizeFilter(policy));
         });
+
         builder.Services.AddHttpClient();
         builder.Services.AddTransient<IFamilyCosmos, FamilyCosmos>();
         builder.Services.AddTransient<IUserCosmos, UserCosmos>();
         builder.Services.AddTransient<ISecurityService, SecurityService>();
         builder.Services.AddTransient<UserManager<Users>>();
 
-        
-        //builder.Services.AddTransient<IConfiguration, Configuration>();
-        
 
+        //builder.Services.AddTransient<IConfiguration, Configuration>();
+
+        builder.UseMiddleware<AuthenticationMiddleware>();
         
     })
     .ConfigureAppConfiguration(app =>
