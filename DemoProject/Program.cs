@@ -75,6 +75,7 @@ var host = new HostBuilder()
         //builder.Services.AddTransient<IConfiguration, Configuration>();
 
         builder.UseMiddleware<AuthenticationMiddleware>();
+        builder.UseMiddleware<AuthorizeMiddleware>();
         
     })
     .ConfigureAppConfiguration(app =>

@@ -67,6 +67,7 @@ namespace DemoProject.Functions
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        [Authorize(Role ="Admin")]
         [Function("AddNewUsersInfo")]
         public async Task<HttpResponseData> AddNewUsersInfo([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {
@@ -90,7 +91,7 @@ namespace DemoProject.Functions
             }
         }
 
-        [Authorize]
+        [Authorize(Role ="admin,user")]
         //[RoleAuthorize]
         [Function("GetAllUserData")]
         public async Task<HttpResponseData> GetAllUserData([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData request)
@@ -120,7 +121,7 @@ namespace DemoProject.Functions
             }
         }
 
-        [Authorize]
+        [Authorize(Role = "Admin")]
         [Function("GetUserDataIdwise")]
         public async Task<HttpResponseData> GetUserDataIdwise([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {
@@ -139,7 +140,7 @@ namespace DemoProject.Functions
                 return await request.InternalServerError(ex.Message.ToString());
             }
         }
-
+        [Authorize(Role = "Admin")]
         [Function("UpdateUserData")]
         public async Task<HttpResponseData> UpdateUserData([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {
@@ -158,6 +159,7 @@ namespace DemoProject.Functions
             }
         }
 
+        [Authorize(Role = "Admin")]
         [Function("UpsertUserData")]
         public async Task<HttpResponseData> UpsertUserData([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {
@@ -175,7 +177,7 @@ namespace DemoProject.Functions
                 return await request.InternalServerError(ex.Message.ToString());
             }
         }
-
+        [Authorize(Role = "Admin")]
         [Function("DeleteUserData")]
         public async Task<HttpResponseData> DeleteUserData([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {
@@ -194,6 +196,7 @@ namespace DemoProject.Functions
             }
         }
 
+        
         [Function("UserLogIn")]
         public async Task<HttpResponseData> UserLogIn([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {

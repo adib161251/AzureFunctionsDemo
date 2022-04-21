@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Net;
 using DemoProject.DataModel;
 using DemoProject.Extensions;
+using DemoProject.HelperFunctions.Attributes;
 using DemoProject.Repository.Interface;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -65,7 +66,7 @@ namespace DemoProject
 
         }
 
-
+        [Authorize(Role = "Admin")]
         [Function("AddFamilyDataAsync")]
         public async Task<HttpResponseData> AddFamilyDataAsync([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {
@@ -101,6 +102,7 @@ namespace DemoProject
             }
         }
 
+        [Authorize(Role = "Admin,User")]
         [Function("GetAllFamilyInfo")]
         public async Task<HttpResponseData> GetAllFamilyInfo([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData request)
         {
@@ -118,7 +120,7 @@ namespace DemoProject
             }
         }
 
-        
+        [Authorize(Role = "Admin")]
         [Function("GetFamilyInfobyId")]
         public async Task<HttpResponseData> GetFamilyInfobyId([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {
@@ -139,6 +141,7 @@ namespace DemoProject
             }
         }
 
+        [Authorize(Role = "Admin")]
         [Function("DeleteFamilyInfobyId")]
         public async Task<HttpResponseData> DeleteFamilyInfobyId([HttpTrigger(AuthorizationLevel.Function,"post")] HttpRequestData request)
         {
@@ -158,6 +161,7 @@ namespace DemoProject
 
         }
 
+        [Authorize(Role = "Admin")]
         [Function("UpdateFamilyInfo")]
         public async Task<HttpResponseData> UpdateFamilyInfo([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData request)
         {

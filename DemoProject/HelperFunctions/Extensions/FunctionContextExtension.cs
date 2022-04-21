@@ -15,10 +15,7 @@ namespace DemoProject.HelperFunctions.Extensions
             this FunctionContext context,
             HttpStatusCode statusCode)
         {
-            // Terrible reflection code since I haven't found a nicer way to do this...
-            // For some reason the types are marked as internal
-            // If there's code that will break in this sample,
-            // it's probably here.
+           
             var coreAssembly = Assembly.Load("Microsoft.Azure.Functions.Worker.Core");
             var featureInterfaceName = "Microsoft.Azure.Functions.Worker.Context.Features.IFunctionBindingsFeature";
             var featureInterfaceType = coreAssembly.GetType(featureInterfaceName);
@@ -35,11 +32,7 @@ namespace DemoProject.HelperFunctions.Extensions
 
         public static MethodInfo GetTargetFunctionMethod(this FunctionContext context)
         {
-            // More terrible reflection code..
-            // Would be nice if this was available out of the box on FunctionContext
-
-            // This contains the fully qualified name of the method
-            // E.g. IsolatedFunctionAuth.TestFunctions.ScopesAndAppRoles
+            
             var entryPoint = context.FunctionDefinition.EntryPoint;
 
             var assemblyPath = context.FunctionDefinition.PathToAssembly;
